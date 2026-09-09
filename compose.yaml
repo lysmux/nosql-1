@@ -1,0 +1,15 @@
+services:
+  backend:
+    build: app
+    environment:
+      - APP_STORAGE
+      - RIAK_NODES
+
+  frontend:
+    build: web
+    environment:
+      BACKEND_URL: http://backend:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend

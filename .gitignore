@@ -1,0 +1,14 @@
+# зависимости
+node_modules/
+
+# сборка
+build/
+.gradle/
+.kotlin/
+dist/
+.vite/
+
+# среды разработки
+.idea/
+.vscode/
+*.iml
