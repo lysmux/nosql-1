@@ -1,8 +1,0 @@
-server {
-    listen 8080;
-    root /usr/share/nginx/html;
-
-    location /api/ {
-        proxy_pass ${BACKEND_URL}/;
-    }
-}
