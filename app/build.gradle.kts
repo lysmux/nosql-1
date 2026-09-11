@@ -36,6 +36,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
     runtimeOnly("org.postgresql:postgresql")
 
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    runtimeOnly("org.hibernate.orm:hibernate-micrometer")
+
     // Unpublished, built from github.com/OpenRiak/riak-java-client@73d87d1 (`./gradlew jar`).
     // A plain jar has no POM, so its dependencies are listed by hand; protobuf stays on 3.x as the client was built against it
     implementation(files("libs/riak-client-73d87d1.jar"))
