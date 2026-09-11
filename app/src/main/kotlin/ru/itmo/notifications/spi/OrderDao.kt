@@ -5,6 +5,6 @@ import java.util.UUID
 
 interface OrderDao {
     fun save(order: Order)
-    fun find(orderId: UUID): Order?
+    fun findForUpdate(orderId: UUID): Order?
     fun findAll(): List<Order>
 }

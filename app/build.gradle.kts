@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "2.4.20"
     kotlin("plugin.spring") version "2.4.20"
+    kotlin("plugin.jpa") version "2.4.20"
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.openapi.generator") version "7.14.0"
@@ -16,6 +17,12 @@ kotlin {
     }
 }
 
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
+}
+
 repositories {
     mavenCentral()
 }
@@ -24,6 +31,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-liquibase")
+    runtimeOnly("org.postgresql:postgresql")
 
     // Unpublished, built from github.com/OpenRiak/riak-java-client@73d87d1 (`./gradlew jar`).
     // A plain jar has no POM, so its dependencies are listed by hand; protobuf stays on 3.x as the client was built against it

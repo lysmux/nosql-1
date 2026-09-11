@@ -1,14 +1,12 @@
 package ru.itmo.notifications.adapters.dao.riak
 
 import org.springframework.stereotype.Repository
-import ru.itmo.notifications.adapters.riak.RiakStorage
 import ru.itmo.notifications.adapters.riak.RiakTemplate
 import ru.itmo.notifications.domain.OperatorSession
 import ru.itmo.notifications.spi.SessionDao
 import java.time.Instant
 
 @Repository
-@RiakStorage
 class RiakSessionDao(
     private val riak: RiakTemplate,
 ) : SessionDao {

@@ -2,8 +2,29 @@ services:
   backend:
     build: app
     environment:
-      - APP_STORAGE
       - RIAK_NODES
+      - POSTGRES_URL=jdbc:postgresql://postgres:5432/notifications
+      - POSTGRES_USER=notifications
+      - POSTGRES_PASSWORD=notifications
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: notifications
+      POSTGRES_USER: notifications
+      POSTGRES_PASSWORD: notifications
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "notifications", "-d", "notifications"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   frontend:
     build: web
@@ -13,3 +34,6 @@ services:
       - "8080:8080"
     depends_on:
       - backend
+
+volumes:
+  postgres-data:

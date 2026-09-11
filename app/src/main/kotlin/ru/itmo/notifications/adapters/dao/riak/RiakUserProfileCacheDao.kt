@@ -2,7 +2,6 @@ package ru.itmo.notifications.adapters.dao.riak
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Repository
-import ru.itmo.notifications.adapters.riak.RiakStorage
 import ru.itmo.notifications.adapters.riak.RiakTemplate
 import ru.itmo.notifications.domain.User
 import ru.itmo.notifications.spi.UserProfileCacheDao
@@ -11,7 +10,6 @@ import java.time.Instant
 import java.util.UUID
 
 @Repository
-@RiakStorage
 class RiakUserProfileCacheDao(
     private val riak: RiakTemplate,
     @Value("\${app.cache.user-profile.ttl}") private val ttl: Duration,

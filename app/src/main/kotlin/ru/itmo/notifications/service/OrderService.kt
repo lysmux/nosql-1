@@ -1,6 +1,7 @@
 package ru.itmo.notifications.service
 
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import ru.itmo.notifications.domain.Order
 import ru.itmo.notifications.domain.OrderStatus
 import ru.itmo.notifications.service.exceptions.OrderCompletedException
@@ -19,6 +20,7 @@ class OrderService(
 ) {
     fun list(): List<Order> = orders.findAll()
 
+    @Transactional
     fun create(userId: UUID, restaurantName: String, totalAmount: BigDecimal): Order {
         users.byId(userId)
         val order = Order(
@@ -34,8 +36,9 @@ class OrderService(
         return order
     }
 
+    @Transactional
     fun advance(orderId: UUID): Order {
-        val order = orders.find(orderId) ?: throw NotFoundException("Заказ $orderId не найден")
+        val order = orders.findForUpdate(orderId) ?: throw NotFoundException("Заказ $orderId не найден")
         val next = order.status.next() ?: throw OrderCompletedException()
         val advanced = order.copy(status = next)
         orders.save(advanced)

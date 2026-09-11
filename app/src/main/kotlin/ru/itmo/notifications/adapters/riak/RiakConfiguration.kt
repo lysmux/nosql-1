@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration
 import java.time.Duration
 
 @Configuration
-@RiakStorage
 class RiakConfiguration {
     @Bean(destroyMethod = "shutdown")
     fun riakClient(
