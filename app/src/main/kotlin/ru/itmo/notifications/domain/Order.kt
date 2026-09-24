@@ -8,6 +8,7 @@ import java.util.UUID
 data class Order(
     val orderId: UUID,
     val userId: UUID,
+    val userName: String,
     val restaurantName: String,
     val totalAmount: BigDecimal,
     val status: OrderStatus,

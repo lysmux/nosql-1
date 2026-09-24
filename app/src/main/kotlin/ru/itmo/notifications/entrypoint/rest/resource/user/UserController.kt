@@ -20,8 +20,8 @@ class UserController(
     override fun usersCreate(createUserRequestDto: CreateUserRequestDto): ResponseEntity<UserDto> =
         ResponseEntity.status(HttpStatus.CREATED).body(users.create(createUserRequestDto.name).toDto())
 
-    override fun usersList(): ResponseEntity<List<UserDto>> =
-        ResponseEntity.ok(users.list().map { it.toDto() })
+    override fun usersSearch(query: String?, limit: Int): ResponseEntity<List<UserDto>> =
+        ResponseEntity.ok(users.search(query, limit).map { it.toDto() })
 
     override fun usersRead(userId: UUID): ResponseEntity<UserDto> =
         ResponseEntity.ok(users.profile(userId).toDto())

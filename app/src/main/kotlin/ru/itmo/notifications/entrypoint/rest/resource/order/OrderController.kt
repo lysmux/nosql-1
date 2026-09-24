@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController
 import ru.itmo.notifications.entrypoint.api.OrdersApi
 import ru.itmo.notifications.entrypoint.api.model.CreateOrderRequestDto
 import ru.itmo.notifications.entrypoint.api.model.OrderDto
+import ru.itmo.notifications.entrypoint.api.model.OrderPageDto
 import ru.itmo.notifications.service.OrderService
 import java.util.UUID
 
@@ -13,8 +14,8 @@ import java.util.UUID
 class OrderController(
     private val orders: OrderService,
 ) : OrdersApi {
-    override fun ordersList(): ResponseEntity<List<OrderDto>> =
-        ResponseEntity.ok(orders.list().map { it.toDto() })
+    override fun ordersList(page: Int, size: Int): ResponseEntity<OrderPageDto> =
+        ResponseEntity.ok(orders.list(page, size).toDto())
 
     override fun ordersCreate(createOrderRequestDto: CreateOrderRequestDto): ResponseEntity<OrderDto> {
         val order = orders.create(

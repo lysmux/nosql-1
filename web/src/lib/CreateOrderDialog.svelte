@@ -1,11 +1,11 @@
 <script>
-  import { untrack } from 'svelte';
   import { api } from './api.js';
   import Modal from './Modal.svelte';
+  import UserSearch from './UserSearch.svelte';
 
-  let { users, onCreated, onClose } = $props();
+  let { onCreated, onClose } = $props();
 
-  let userId = $state(untrack(() => users[0]?.userId) ?? '');
+  let user = $state(null);
   let restaurantName = $state('');
   let totalAmount = $state('');
   let busy = $state(false);
@@ -16,7 +16,7 @@
     busy = true;
     error = '';
     try {
-      await api.createOrder({ userId, restaurantName, totalAmount: Number(totalAmount) });
+      await api.createOrder({ userId: user.userId, restaurantName, totalAmount: Number(totalAmount) });
       onCreated();
     } catch (e) {
       error = e.message;
@@ -27,28 +27,43 @@
 </script>
 
 <Modal title="Новый заказ" {onClose}>
-  {#if users.length === 0}
-    <p class="muted">Сначала создайте клиента.</p>
-  {:else}
-    <form class="form" onsubmit={submit}>
-      <label class="field">
-        Клиент
-        <select bind:value={userId}>
-          {#each users as user (user.userId)}
-            <option value={user.userId}>{user.name}</option>
-          {/each}
-        </select>
-      </label>
-      <label class="field">
-        Ресторан
-        <input bind:value={restaurantName} maxlength="200" placeholder="Например, Пицца Хат" required />
-      </label>
-      <label class="field">
-        Сумма, ₽
-        <input bind:value={totalAmount} type="number" min="0" step="0.01" placeholder="0.00" required />
-      </label>
-      {#if error}<p class="error">{error}</p>{/if}
-      <button class="primary" type="submit" disabled={busy}>Создать заказ</button>
-    </form>
-  {/if}
+  <form class="form" onsubmit={submit}>
+    <div class="field">
+      Клиент
+      {#if user}
+        <div class="selected">
+          <b>{user.name}</b>
+          <button type="button" onclick={() => (user = null)}>Сменить</button>
+        </div>
+      {:else}
+        <UserSearch onSelect={(found) => (user = found)} />
+      {/if}
+    </div>
+    <label class="field">
+      Ресторан
+      <input bind:value={restaurantName} maxlength="200" placeholder="Например, Пицца Хат" required />
+    </label>
+    <label class="field">
+      Сумма, ₽
+      <input bind:value={totalAmount} type="number" min="0" step="0.01" placeholder="0.00" required />
+    </label>
+    {#if error}<p class="error">{error}</p>{/if}
+    <button class="primary" type="submit" disabled={busy || !user}>Создать заказ</button>
+  </form>
 </Modal>
+
+<style>
+  .selected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 6px 6px 12px;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: normal;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+</style>

@@ -36,6 +36,9 @@ model Order {
   @doc("Заказчик.")
   userId: uuid;
 
+  @doc("Имя заказчика.")
+  userName: string;
+
   @doc("Название ресторана. Справочника ресторанов нет, это просто строка.")
   restaurantName: string;
 
@@ -49,6 +52,24 @@ model Order {
   createdAt: utcDateTime;
 }
 
+@doc("Страница заказов.")
+model OrderPage {
+  @doc("Заказы страницы, от новых к старым.")
+  items: Order[];
+
+  @doc("Номер страницы, с нуля.")
+  page: int32;
+
+  @doc("Запрошенный размер страницы.")
+  pageSize: int32;
+
+  @doc("Всего заказов.")
+  totalItems: int64;
+
+  @doc("Всего страниц.")
+  totalPages: int32;
+}
+
 @doc("Уведомление клиенту. Создаётся системой при создании заказа и при смене его статуса.")
 model Notification {
   @doc("Идентификатор уведомления.")
@@ -56,6 +77,9 @@ model Notification {
 
   @doc("Получатель.")
   userId: uuid;
+
+  @doc("Имя получателя.")
+  userName: string;
 
   @doc("Заказ, породивший уведомление.")
   orderId: uuid;
@@ -65,6 +89,12 @@ model Notification {
 
   @doc("Момент создания.")
   createdAt: utcDateTime;
+}
+
+@doc("Настройки кэширования.")
+model CacheSettings {
+  @doc("Включён ли кэш профилей клиентов.")
+  enabled: boolean;
 }
 
 @doc("Сессия оператора. Живёт 30 минут, продлевается при каждом успешном запросе.")

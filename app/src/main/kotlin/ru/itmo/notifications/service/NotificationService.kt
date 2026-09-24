@@ -25,6 +25,7 @@ class NotificationService(
         val notification = Notification(
             notificationId = UUID.randomUUID(),
             userId = order.userId,
+            userName = order.userName,
             orderId = order.orderId,
             text = textFor(order),
             createdAt = Instant.now(),

@@ -7,7 +7,7 @@
 
   setUnauthorizedHandler(() => (authorized = false));
 
-  api.listUsers()
+  api.searchUsers('')
     .then(() => (authorized = true))
     .catch(() => (authorized = false));
 </script>

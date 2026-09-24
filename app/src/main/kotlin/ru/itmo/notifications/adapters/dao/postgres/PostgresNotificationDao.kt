@@ -37,6 +37,7 @@ class PostgresNotificationDao(
     private fun NotificationEntity.toDomain() = Notification(
         notificationId = notificationId,
         userId = user.userId,
+        userName = user.name,
         orderId = order.orderId,
         text = text,
         createdAt = createdAt,

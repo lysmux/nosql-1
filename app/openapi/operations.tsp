@@ -64,9 +64,22 @@ namespace Users {
     @body user: User;
   } | ErrorResponse;
 
-  @doc("Список всех клиентов: для выбора клиента при создании заказа и для перехода в профиль.")
+  @doc("""
+    Полнотекстовый поиск клиентов по имени: совпадение по началу слов, без учёта регистра.
+    Без `query` возвращает первых клиентов по алфавиту.
+    """)
   @get
-  op list(): User[] | ErrorResponse;
+  op search(
+    @doc("Строка поиска.")
+    @query
+    query?: string,
+
+    @doc("Сколько записей вернуть.")
+    @query
+    @minValue(1)
+    @maxValue(50)
+    limit?: int32 = 10,
+  ): User[] | ErrorResponse;
 
   @doc("БП-6. Профиль клиента. Чтение идёт через кэш: при промахе профиль берётся из основных данных.")
   @get
@@ -97,9 +110,20 @@ namespace Users {
 @route("/orders")
 @tag("Заказы")
 namespace Orders {
-  @doc("БП-2. Список всех заказов для главной страницы.")
+  @doc("БП-2. Страница заказов для главной страницы, от новых к старым.")
   @get
-  op list(): Order[] | ErrorResponse;
+  op list(
+    @doc("Номер страницы, с нуля.")
+    @query
+    @minValue(0)
+    page?: int32 = 0,
+
+    @doc("Размер страницы.")
+    @query
+    @minValue(1)
+    @maxValue(100)
+    size?: int32 = 20,
+  ): OrderPage | ErrorResponse;
 
   @doc("""
     БП-4. Создаёт заказ на существующего клиента в статусе `CREATED`
@@ -140,4 +164,23 @@ namespace Notifications {
     @maxValue(200)
     limit?: int32 = 20,
   ): Notification[] | ErrorResponse;
+}
+
+// ---------------------------------------------------------------------------
+// Настройки
+// ---------------------------------------------------------------------------
+
+@route("/settings/cache")
+@tag("Настройки")
+namespace Settings {
+  @doc("Текущее состояние кэша профилей клиентов.")
+  @get
+  op readCache(): CacheSettings | ErrorResponse;
+
+  @doc("""
+    Включает или выключает кэш профилей клиентов без перезапуска.
+    Состояние хранится в памяти и после перезапуска возвращается к значению из конфигурации.
+    """)
+  @put
+  op updateCache(@body body: CacheSettings): CacheSettings | ErrorResponse;
 }

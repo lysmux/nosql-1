@@ -1,7 +1,7 @@
 <script>
   import { formatTime } from './api.js';
 
-  let { notifications, nameOf = null } = $props();
+  let { notifications, showUser = false } = $props();
 </script>
 
 {#if notifications.length === 0}
@@ -12,7 +12,7 @@
       <li>
         <p>{notification.text}</p>
         <span class="muted">
-          {#if nameOf}<b>{nameOf(notification.userId)}</b> · {/if}{formatTime(notification.createdAt)}
+          {#if showUser}<b>{notification.userName}</b> · {/if}{formatTime(notification.createdAt)}
         </span>
       </li>
     {/each}

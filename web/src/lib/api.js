@@ -28,14 +28,16 @@ export const api = {
   login: () => request('POST', '/auth/login'),
   logout: () => request('POST', '/auth/logout'),
   registerVisit: () => request('POST', '/main-page/visits'),
-  listUsers: () => request('GET', '/users'),
+  searchUsers: (query) => request('GET', `/users?query=${encodeURIComponent(query)}`),
   createUser: (name) => request('POST', '/users', { name }),
   getUser: (userId) => request('GET', `/users/${userId}`),
   userNotifications: (userId) => request('GET', `/users/${userId}/notifications`),
-  listOrders: () => request('GET', '/orders'),
+  listOrders: (page, size) => request('GET', `/orders?page=${page}&size=${size}`),
   createOrder: (order) => request('POST', '/orders', order),
   advanceOrder: (orderId) => request('POST', `/orders/${orderId}/advance`),
   feed: (limit) => request('GET', `/notifications?limit=${limit}`),
+  getCacheSettings: () => request('GET', '/settings/cache'),
+  setCacheEnabled: (enabled) => request('PUT', '/settings/cache', { enabled }),
 };
 
 export const STATUSES = ['CREATED', 'COOKING', 'IN_DELIVERY', 'DELIVERED'];

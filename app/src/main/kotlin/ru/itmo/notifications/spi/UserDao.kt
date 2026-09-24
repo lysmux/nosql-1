@@ -6,5 +6,5 @@ import java.util.UUID
 interface UserDao {
     fun save(user: User)
     fun find(userId: UUID): User?
-    fun findAll(): List<User>
+    fun search(query: String, limit: Int): List<User>
 }

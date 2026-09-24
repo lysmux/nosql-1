@@ -13,6 +13,7 @@ tags:
   - name: Клиенты
   - name: Заказы
   - name: Уведомления
+  - name: Настройки
 paths:
   /auth/login:
     post:
@@ -174,17 +175,36 @@ paths:
   /orders:
     get:
       operationId: Orders_list
-      description: БП-2. Список всех заказов для главной страницы.
-      parameters: []
+      description: БП-2. Страница заказов для главной страницы, от новых к старым.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Номер страницы, с нуля.
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+          explode: false
+        - name: size
+          in: query
+          required: false
+          description: Размер страницы.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Order'
+                $ref: '#/components/schemas/OrderPage'
         '400':
           description: Ошибка выполнения запроса.
           content:
@@ -302,6 +322,89 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Заказы
+  /settings/cache:
+    get:
+      operationId: Settings_readCache
+      description: Текущее состояние кэша профилей клиентов.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheSettings'
+        '400':
+          description: Ошибка выполнения запроса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Ошибка выполнения запроса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ошибка выполнения запроса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Ошибка выполнения запроса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Настройки
+    put:
+      operationId: Settings_updateCache
+      description: |-
+        Включает или выключает кэш профилей клиентов без перезапуска.
+        Состояние хранится в памяти и после перезапуска возвращается к значению из конфигурации.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheSettings'
+        '400':
+          description: Ошибка выполнения запроса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Ошибка выполнения запроса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ошибка выполнения запроса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Ошибка выполнения запроса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Настройки
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CacheSettings'
   /users:
     post:
       operationId: Users_create
@@ -347,9 +450,29 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateUserRequest'
     get:
-      operationId: Users_list
-      description: 'Список всех клиентов: для выбора клиента при создании заказа и для перехода в профиль.'
-      parameters: []
+      operationId: Users_search
+      description: |-
+        Полнотекстовый поиск клиентов по имени: совпадение по началу слов, без учёта регистра.
+        Без `query` возвращает первых клиентов по алфавиту.
+      parameters:
+        - name: query
+          in: query
+          required: false
+          description: Строка поиска.
+          schema:
+            type: string
+          explode: false
+        - name: limit
+          in: query
+          required: false
+          description: Сколько записей вернуть.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 50
+            default: 10
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -490,6 +613,15 @@ security:
   - ApiKeyAuth: []
 components:
   schemas:
+    CacheSettings:
+      type: object
+      required:
+        - enabled
+      properties:
+        enabled:
+          type: boolean
+          description: Включён ли кэш профилей клиентов.
+      description: Настройки кэширования.
     CreateOrderRequest:
       type: object
       required:
@@ -548,6 +680,7 @@ components:
       required:
         - notificationId
         - userId
+        - userName
         - orderId
         - text
         - createdAt
@@ -558,6 +691,9 @@ components:
         userId:
           $ref: '#/components/schemas/uuid'
           description: Получатель.
+        userName:
+          type: string
+          description: Имя получателя.
         orderId:
           $ref: '#/components/schemas/uuid'
           description: Заказ, породивший уведомление.
@@ -584,6 +720,7 @@ components:
       required:
         - orderId
         - userId
+        - userName
         - restaurantName
         - totalAmount
         - status
@@ -595,6 +732,9 @@ components:
         userId:
           $ref: '#/components/schemas/uuid'
           description: Заказчик.
+        userName:
+          type: string
+          description: Имя заказчика.
         restaurantName:
           type: string
           description: Название ресторана. Справочника ресторанов нет, это просто строка.
@@ -610,6 +750,37 @@ components:
           format: date-time
           description: Момент создания заказа.
       description: Заказ клиента — источник всех уведомлений.
+    OrderPage:
+      type: object
+      required:
+        - items
+        - page
+        - pageSize
+        - totalItems
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+          description: Заказы страницы, от новых к старым.
+        page:
+          type: integer
+          format: int32
+          description: Номер страницы, с нуля.
+        pageSize:
+          type: integer
+          format: int32
+          description: Запрошенный размер страницы.
+        totalItems:
+          type: integer
+          format: int64
+          description: Всего заказов.
+        totalPages:
+          type: integer
+          format: int32
+          description: Всего страниц.
+      description: Страница заказов.
     OrderStatus:
       type: string
       enum:

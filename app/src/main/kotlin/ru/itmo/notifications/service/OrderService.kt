@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.itmo.notifications.domain.Order
 import ru.itmo.notifications.domain.OrderStatus
+import ru.itmo.notifications.domain.Paged
 import ru.itmo.notifications.service.exceptions.OrderCompletedException
 import ru.itmo.notifications.shared.exceptions.NotFoundException
 import ru.itmo.notifications.shared.exceptions.ValidationException
@@ -18,14 +19,21 @@ class OrderService(
     private val users: UserService,
     private val notifications: NotificationService,
 ) {
-    fun list(): List<Order> = orders.findAll()
+    fun list(page: Int, size: Int): Paged<Order> {
+        if (page < 0) throw ValidationException("page не может быть отрицательным")
+        if (size !in MIN_PAGE_SIZE..MAX_PAGE_SIZE) {
+            throw ValidationException("size должен быть в диапазоне $MIN_PAGE_SIZE..$MAX_PAGE_SIZE")
+        }
+        return orders.findPage(page, size)
+    }
 
     @Transactional
     fun create(userId: UUID, restaurantName: String, totalAmount: BigDecimal): Order {
-        users.byId(userId)
+        val user = users.byId(userId)
         val order = Order(
             orderId = UUID.randomUUID(),
             userId = userId,
+            userName = user.name,
             restaurantName = checkRestaurantName(restaurantName),
             totalAmount = checkTotalAmount(totalAmount),
             status = OrderStatus.CREATED,
@@ -65,5 +73,7 @@ class OrderService(
 
     private companion object {
         const val MAX_RESTAURANT_NAME_LENGTH = 200
+        const val MIN_PAGE_SIZE = 1
+        const val MAX_PAGE_SIZE = 100
     }
 }

@@ -1,7 +1,7 @@
 <script>
   import { STATUSES, STATUS_LABELS, formatTime } from './api.js';
 
-  let { order, userName, onOpenUser, onAdvance } = $props();
+  let { order, onOpenUser, onAdvance } = $props();
 
   let current = $derived(STATUSES.indexOf(order.status));
   let finished = $derived(order.status === 'DELIVERED');
@@ -15,8 +15,8 @@
 
   <div class="meta">
     <button class="user" onclick={() => onOpenUser(order.userId)}>
-      <span class="avatar">{userName.slice(0, 1).toUpperCase()}</span>
-      {userName}
+      <span class="avatar">{order.userName.slice(0, 1).toUpperCase()}</span>
+      {order.userName}
     </button>
     <span class="muted">{formatTime(order.createdAt)}</span>
   </div>

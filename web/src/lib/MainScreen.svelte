@@ -5,27 +5,41 @@
   import UserProfile from './UserProfile.svelte';
   import CreateUserDialog from './CreateUserDialog.svelte';
   import CreateOrderDialog from './CreateOrderDialog.svelte';
+  import Pagination from './Pagination.svelte';
+
+  const PAGE_SIZE = 3;
 
   let { onLogout } = $props();
 
-  let orders = $state([]);
-  let users = $state([]);
+  let ordersPage = $state({ items: [], page: 0, totalItems: 0, totalPages: 0 });
+  let page = $state(0);
   let notifications = $state([]);
   let visits = $state(null);
+  let cacheEnabled = $state(null);
   let error = $state('');
   let dialog = $state(null);
   let profileUserId = $state(null);
 
-  let names = $derived(new Map(users.map((user) => [user.userId, user.name])));
-
   async function reload() {
     try {
-      [orders, users, notifications] = await Promise.all([
-        api.listOrders(),
-        api.listUsers(),
+      [ordersPage, notifications] = await Promise.all([
+        api.listOrders(page, PAGE_SIZE),
         api.feed(50),
       ]);
       error = '';
+    } catch (e) {
+      error = e.message;
+    }
+  }
+
+  function goToPage(next) {
+    page = next;
+    return reload();
+  }
+
+  async function toggleCache() {
+    try {
+      cacheEnabled = (await api.setCacheEnabled(!cacheEnabled)).enabled;
     } catch (e) {
       error = e.message;
     }
@@ -51,6 +65,9 @@
   api.registerVisit()
     .then((counter) => (visits = counter.value))
     .catch(() => {});
+  api.getCacheSettings()
+    .then((settings) => (cacheEnabled = settings.enabled))
+    .catch(() => {});
   reload();
 </script>
 
@@ -58,6 +75,9 @@
   <h1><span class="logo">🍔</span> Заказы и уведомления</h1>
   <div class="actions">
     {#if visits !== null}<span class="visits">Посещений: <b>{visits}</b></span>{/if}
+    {#if cacheEnabled !== null}
+      <button class:primary={cacheEnabled} onclick={toggleCache}>Кэш: {cacheEnabled ? 'вкл' : 'выкл'}</button>
+    {/if}
     <button onclick={() => (dialog = 'user')}>+ Клиент</button>
     <button onclick={() => (dialog = 'order')}>+ Заказ</button>
     <button onclick={reload}>Обновить</button>
@@ -69,27 +89,27 @@
 
 <main>
   <section>
-    <h2>Заказы <span class="count">{orders.length}</span></h2>
+    <h2>Заказы <span class="count">{ordersPage.totalItems}</span></h2>
     <div class="orders">
-      {#if orders.length === 0}
+      {#if ordersPage.items.length === 0}
         <p class="empty muted">Заказов пока нет. Создайте первый.</p>
       {:else}
-        {#each orders as order (order.orderId)}
+        {#each ordersPage.items as order (order.orderId)}
           <OrderCard
             {order}
-            userName={names.get(order.userId) ?? order.userId}
             onOpenUser={(userId) => (profileUserId = userId)}
             onAdvance={advance}
           />
         {/each}
       {/if}
     </div>
+    <Pagination {page} totalPages={ordersPage.totalPages} onChange={goToPage} />
   </section>
 
   <aside>
     <h2>Лента уведомлений</h2>
     <div class="feed">
-      <NotificationList {notifications} nameOf={(userId) => names.get(userId) ?? userId} />
+      <NotificationList {notifications} showUser />
     </div>
   </aside>
 </main>
@@ -104,10 +124,9 @@
   />
 {:else if dialog === 'order'}
   <CreateOrderDialog
-    {users}
     onCreated={() => {
       dialog = null;
-      reload();
+      goToPage(0);
     }}
     onClose={() => (dialog = null)}
   />

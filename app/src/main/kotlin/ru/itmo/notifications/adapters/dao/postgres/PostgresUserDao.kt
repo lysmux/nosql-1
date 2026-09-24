@@ -1,5 +1,6 @@
 package ru.itmo.notifications.adapters.dao.postgres
 
+import org.springframework.data.domain.Limit
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import ru.itmo.notifications.adapters.dao.postgres.entity.UserEntity
@@ -18,7 +19,22 @@ class PostgresUserDao(
 
     override fun find(userId: UUID): User? = users.findByIdOrNull(userId)?.toDomain()
 
-    override fun findAll(): List<User> = users.findAllByOrderByName().map { it.toDomain() }
+    override fun search(query: String, limit: Int): List<User> {
+        val tsQuery = query.toPrefixTsQuery()
+        val found = if (tsQuery.isEmpty()) {
+            users.findAllByOrderByName(Limit.of(limit))
+        } else {
+            users.searchByName(tsQuery, limit)
+        }
+        return found.map { it.toDomain() }
+    }
+
+    private fun String.toPrefixTsQuery() =
+        split(NON_WORD).filter { it.isNotEmpty() }.joinToString(" & ") { "$it:*" }
 
     private fun UserEntity.toDomain() = User(userId, name)
+
+    private companion object {
+        val NON_WORD = Regex("[^\\p{L}\\p{N}]+")
+    }
 }
