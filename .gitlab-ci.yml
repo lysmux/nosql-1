@@ -15,9 +15,24 @@ include:
       build_context: web
       dockerfile_path: web/Dockerfile
 
+  - component: $CI_SERVER_FQDN/cicd/templates/release@1.2.0
+    inputs:
+      job_name: release-backend
+      registry_repository: $CI_PROJECT_PATH/backend
+      gitops_path: apps/notification-system
+      environment_name: production/backend
+
+  - component: $CI_SERVER_FQDN/cicd/templates/release@1.2.0
+    inputs:
+      job_name: release-frontend
+      registry_repository: $CI_PROJECT_PATH/frontend
+      gitops_path: apps/notification-system
+      environment_name: production/frontend
+
 stages:
   - test
   - build
+  - deploy
 
 workflow:
   rules:
