@@ -19,6 +19,8 @@ class PostgresUserDao(
 
     override fun find(userId: UUID): User? = users.findByIdOrNull(userId)?.toDomain()
 
+    override fun exists(userId: UUID): Boolean = users.existsById(userId)
+
     override fun search(query: String, limit: Int): List<User> {
         val tsQuery = query.toPrefixTsQuery()
         val found = if (tsQuery.isEmpty()) {

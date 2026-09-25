@@ -17,7 +17,7 @@ class NotificationService(
     fun feed(limit: Int): List<Notification> = notifications.findLatest(checkLimit(limit))
 
     fun historyOf(userId: UUID, limit: Int): List<Notification> {
-        users.byId(userId)
+        users.requireExists(userId)
         return notifications.findByUser(userId, checkLimit(limit))
     }
 

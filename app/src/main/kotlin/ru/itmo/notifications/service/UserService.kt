@@ -39,6 +39,10 @@ class UserService(
     fun byId(userId: UUID): User =
         users.find(userId) ?: throw NotFoundException("Клиент $userId не найден")
 
+    fun requireExists(userId: UUID) {
+        if (!users.exists(userId)) throw NotFoundException("Клиент $userId не найден")
+    }
+
     private fun lookupProfile(userId: UUID): ProfileLookup {
         if (!cacheSettings.enabled) return ProfileLookup(byId(userId), CacheOutcome.DISABLED)
 
